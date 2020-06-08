@@ -23,7 +23,7 @@ func init() {
 	flag.StringVar(&awsRegion, "aws-region", "eu-west-1", "AWS region this instance is on")
 	flag.StringVar(&ebsVolumeName, "ebs-volume-name", "", "EBS volume to attach to this node")
 	flag.StringVar(&mountPoint, "mount-point", "/var/lib/etcd", "EBS volume mount point")
-	flag.StringVar(&blockDevice, "block-device", "/dev/xvdf", "Block device to attach as")
+	flag.StringVar(&blockDevice, "block-device", "/dev/nvme1n1", "Block device to attach as")
 	flag.StringVar(&fileSystemFormatType, "filesystem-type", "ext4", "Linux filesystem format type")
 	flag.StringVar(&fileSystemFormatArguments, "filesystem-arguments", "", "Linux filesystem format arguments")
 	flag.BoolVar(&useEBS, "use-ebs", true, "Use EBS instead of instance store")

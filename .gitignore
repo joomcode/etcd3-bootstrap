@@ -13,3 +13,6 @@ etcd3-bootstrap-linux-amd64
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
+
+# vendor
+vendor/
