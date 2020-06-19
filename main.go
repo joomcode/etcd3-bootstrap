@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/route53"
 )
 
 var (
@@ -17,6 +18,9 @@ var (
 	awsRegion                 string
 	fileSystemFormatType      string
 	fileSystemFormatArguments string
+	domain                    string
+	zoneId                    string
+	TTL                       int64
 )
 
 func init() {
@@ -27,12 +31,18 @@ func init() {
 	flag.StringVar(&fileSystemFormatType, "filesystem-type", "ext4", "Linux filesystem format type")
 	flag.StringVar(&fileSystemFormatArguments, "filesystem-arguments", "", "Linux filesystem format arguments")
 	flag.BoolVar(&useEBS, "use-ebs", true, "Use EBS instead of instance store")
+	flag.StringVar(&domain, "domain", "", "domain name")
+	flag.StringVar(&zoneId, "zone-id", "", "AWS Zone Id for domain")
+	flag.Int64Var(&TTL, "ttl", int64(60), "TTL for DNS Cache")
 	flag.Parse()
 }
 
 func main() {
 	// Initialize AWS session
 	awsSession := session.Must(session.NewSession())
+
+	// Create route53 client
+	route53Svc := route53.New(awsSession)
 
 	// Create ec2 and metadata svc clients with specified region
 	ec2SVC := ec2.New(awsSession, aws.NewConfig().WithRegion(awsRegion))
@@ -70,6 +80,15 @@ func main() {
 	}
 
 	if err := ensureVolumeWriteable(mountPoint); err != nil {
+		panic(err)
+	}
+
+	idd, err := metadataSVC.GetInstanceIdentityDocument()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := ensureDNSRecord(route53Svc, idd.PrivateIP); err != nil {
 		panic(err)
 	}
 }

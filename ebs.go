@@ -57,7 +57,7 @@ func attachVolume(svc *ec2.EC2, instanceID string, volume *ec2.Volume) error {
 	}
 
 	input := &ec2.AttachVolumeInput{
-		Device:     aws.String(blockDevice),
+		Device:     aws.String("/dev/xvdf"), // aws will ignore this name
 		InstanceId: aws.String(instanceID),
 		VolumeId:   volume.VolumeId,
 	}
@@ -119,7 +119,13 @@ func ensureVolumeInited(blockDevice, fileSystemFormatType, fileSystemFormatArgum
 	log.Println("Filesystem not present")
 
 	// format volume here
-	cmd := exec.Command("sudo", "/usr/sbin/mkfs."+fileSystemFormatType, blockDevice, fileSystemFormatArguments)
+	cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf(
+		"sudo /usr/sbin/mkfs.%s %s %s",
+		fileSystemFormatType,
+		blockDevice,
+		fileSystemFormatArguments,
+	))
+
 	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "mkfs."+fileSystemFormatType+" failed")
@@ -161,8 +167,19 @@ func ensureVolumeMounted(blockDevice, mountPoint string) error {
 }
 
 func ensureVolumeWriteable(mountPoint string) error {
+	log.Printf("Ensuring user etcd exists")
+
+	cmd := exec.Command("/bin/sh", "-c", "sudo /usr/sbin/useradd -U etcd")
+	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Printf("Skipping")
+	}
+
 	log.Printf("Ensuring %s is r/w by etcd\n", mountPoint)
-	if err := exec.Command("sudo", "/usr/bin/chown", "-R", "etcd:etcd", mountPoint).Run(); err != nil {
+
+	cmd = exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo /usr/bin/chown -R etcd:etcd %s", mountPoint))
+	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	if err := cmd.Run(); err != nil {
 		return errors.Wrapf(err, "cannot make %s writeable by etcd", mountPoint)
 	}
 
