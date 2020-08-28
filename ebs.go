@@ -111,7 +111,7 @@ func attachVolume(svc *ec2.EC2, instanceID string, volume *ec2.Volume) error {
 func ensureVolumeInited(blockDevice, fileSystemFormatType, fileSystemFormatArguments string) error {
 	log.Printf("Checking for existing filesystem on device: %s\n", blockDevice)
 
-	if err := exec.Command("sudo", "/usr/sbin/blkid", blockDevice).Run(); err == nil {
+	if err := exec.Command("sudo", "/sbin/blkid", blockDevice).Run(); err == nil {
 		log.Println("Found existing filesystem")
 		return nil
 	}
@@ -120,7 +120,7 @@ func ensureVolumeInited(blockDevice, fileSystemFormatType, fileSystemFormatArgum
 
 	// format volume here
 	cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf(
-		"sudo /usr/sbin/mkfs.%s %s %s",
+		"sudo /sbin/mkfs.%s %s %s",
 		fileSystemFormatType,
 		blockDevice,
 		fileSystemFormatArguments,
@@ -177,7 +177,7 @@ func ensureVolumeWriteable(mountPoint string) error {
 
 	log.Printf("Ensuring %s is r/w by etcd\n", mountPoint)
 
-	cmd = exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo /usr/bin/chown -R etcd:etcd %s", mountPoint))
+	cmd = exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo /bin/chown -R etcd:etcd %s", mountPoint))
 	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 	if err := cmd.Run(); err != nil {
 		return errors.Wrapf(err, "cannot make %s writeable by etcd", mountPoint)
