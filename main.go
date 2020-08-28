@@ -25,7 +25,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&awsRegion, "aws-region", "eu-west-1", "AWS region this instance is on")
+	flag.StringVar(&awsRegion, "aws-region", "eu-central-1", "AWS region this instance is on")
 	flag.StringVar(&ebsVolumeName, "ebs-volume-name", "", "EBS volume to attach to this node")
 	flag.StringVar(&mountPoint, "mount-point", "/var/lib/etcd", "EBS volume mount point")
 	flag.StringVar(&blockDevice, "block-device", "/dev/nvme1n1", "Block device to attach as")
