@@ -57,7 +57,7 @@ func attachVolume(svc *ec2.EC2, instanceID string, volume *ec2.Volume) error {
 	}
 
 	input := &ec2.AttachVolumeInput{
-		Device:     aws.String("/dev/xvdf"), // aws will ignore this name
+		Device:     aws.String(blockDevice),
 		InstanceId: aws.String(instanceID),
 		VolumeId:   volume.VolumeId,
 	}
