@@ -1,4 +1,4 @@
-module github.com/luanguimaraesla/etcd3-bootstrap
+module github.com/joomcode/etcd3-bootstrap
 
 go 1.14
 

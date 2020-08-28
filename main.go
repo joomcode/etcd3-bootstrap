@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"flag"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -88,7 +89,10 @@ func main() {
 		panic(err)
 	}
 
-	if err := ensureDNSRecord(route53Svc, idd.PrivateIP); err != nil {
-		panic(err)
+	if domain != "" && zoneId != "" {
+		log.Printf("will update domain %s (zoneId: %s)", domain, zoneId)
+		if err := ensureDNSRecord(route53Svc, idd.PrivateIP); err != nil {
+			panic(err)
+		}
 	}
 }
