@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"flag"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -72,6 +73,8 @@ func main() {
 		}
 
 		blockDevice, err = volumeToBlockDevice(*volume.VolumeId)
+		// give system some time to create symlinks
+		time.Sleep(3 * time.Second)
 	}
 
 	if err := ensureVolumeInited(blockDevice, fileSystemFormatType, fileSystemFormatArguments); err != nil {
