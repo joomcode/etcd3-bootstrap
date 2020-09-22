@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -14,6 +15,18 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/pkg/errors"
 )
+
+func volumeToBlockDevice(volumeId string) (string, error) {
+	reg, err := regexp.Compile("[^a-z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	cleanVolId := reg.ReplaceAllString(volumeId, "")
+	deviceSymlink := "/dev/disk/by-id/nvme-Amazon_Elastic_Block_Store_" + cleanVolId
+	log.Printf("Resolved volume %s to %s\n", volumeId, deviceSymlink)
+
+	return deviceSymlink, nil
+}
 
 func volumeFromName(svc *ec2.EC2, volumeName, az string) (*ec2.Volume, error) {
 	input := &ec2.DescribeVolumesInput{
@@ -108,7 +121,7 @@ func attachVolume(svc *ec2.EC2, instanceID string, volume *ec2.Volume) error {
 	return nil
 }
 
-func ensureVolumeInited(blockDevice, fileSystemFormatType, fileSystemFormatArguments string) error {
+func ensureVolumeInited(volume, fileSystemFormatType, fileSystemFormatArguments string) error {
 	log.Printf("Checking for existing filesystem on device: %s\n", blockDevice)
 
 	if err := exec.Command("sudo", "/sbin/blkid", blockDevice).Run(); err == nil {

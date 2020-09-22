@@ -70,6 +70,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		blockDevice, err = volumeToBlockDevice(*volume.VolumeId)
 	}
 
 	if err := ensureVolumeInited(blockDevice, fileSystemFormatType, fileSystemFormatArguments); err != nil {
